@@ -1,0 +1,307 @@
+Use the graphical method to solve the following linear programming problem:
+
+
+Maximize: Z = 2x1 + x2 
+Subject to:
+x1 + 2x2 <= 10 
+x1 + x2 <= 6 
+x1 - x2 <= 2 
+x1 - 2x2 <= 1 
+x1, x2 >= 0
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import linprog
+
+# 1. Numerical Solution using linprog
+# Maximize Z = 2x1 + x2  => Minimize -2x1 - x2
+c = [-2, -1]
+A = [[1, 2], [1, 1], [1, -1], [1, -2]]
+b = [10, 6, 2, 1]
+res = linprog(c, A_ub=A, b_ub=b, bounds=(0, None), method='highs')
+
+x1_opt, x2_opt = res.x
+z_max = -res.fun
+
+print(f"Optimal Solution: x1 = {x1_opt:.2f}, x2 = {x2_opt:.2f}")
+print(f"Maximum Value of Z: {z_max:.2f}")
+
+# 2. Graphical Visualization
+x = np.linspace(0, 10, 400)
+
+# Constraints reshaped for y (x2)
+y1 = (10 - x) / 2    # x1 + 2x2 <= 10
+y2 = 6 - x           # x1 + x2 <= 6
+y3 = x - 2           # x1 - x2 <= 2
+y4 = (x - 1) / 2     # x1 - 2x2 <= 1
+
+plt.figure(figsize=(10, 8))
+plt.plot(x, y1, label=r'$x_1 + 2x_2 \leq 10$')
+plt.plot(x, y2, label=r'$x_1 + x_2 \leq 6$')
+plt.plot(x, y3, label=r'$x_1 - x_2 \leq 2$')
+plt.plot(x, y4, label=r'$x_1 - 2x_2 \leq 1$')
+
+# Define the Feasible Region
+y_max = np.minimum(y1, y2)
+y_min = np.maximum(0, np.maximum(y3, y4))
+plt.fill_between(x, y_min, y_max, where=(y_max > y_min), color='gray', alpha=0.3, label='Feasible Region')
+
+# Highlight the optimal point
+plt.plot(x1_opt, x2_opt, 'ro', markersize=10, label=f'Optimal Point ({x1_opt}, {x2_opt})')
+plt.annotate(f'  Max Z = {z_max}', (x1_opt, x2_opt), fontsize=12, fontweight='bold')
+
+# Formatting
+plt.xlim(0, 8)
+plt.ylim(0, 6)
+plt.axhline(0, color='black', linewidth=1)
+plt.axvline(0, color='black', linewidth=1)
+plt.xlabel('$x_1$')
+plt.ylabel('$x_2$')
+plt.title('Graphical Method: Maximize $Z = 2x_1 + x_2$')
+plt.legend()
+plt.grid(True, linestyle='--', alpha=0.7)
+plt.show()
+
+
+A person wants to minimize the cost of a diet that fulfills daily requirements for proteins, fat, and carbohydrates using four food types.
+
+Requirements: Proteins >= 800, Fat >= 200, Carbohydrates >= 700.
+Food Data (Yield per unit & Cost):
+
+Food 1: 3 Prot, 2 Fat, 6 Carb | Cost: 45 BDT 
+Food 2: 4 Prot, 2 Fat, 4 Carb | Cost: 40 BDT 
+Food 3: 8 Prot, 7 Fat, 7 Carb | Cost: 85 BDT 
+Food 4: 6 Prot, 5 Fat, 4 Carb | Cost: 65 BDT.
+
+from scipy.optimize import linprog
+#Define the objective function
+c=[45,40,85,65]
+#Constraints
+A=[[-3,-4,-8,-6], #Proteins
+   [-2,-2,-7,-5], #Fats
+   [-6,-4,-7,-4]  #Carbohydrates
+   ]
+b=[-800,-200,-700]
+#Bounds 
+x_bounds=[(0,None)]*4
+#Solve using linprog
+res=linprog(c,A_ub=A,b_ub=b,bounds=x_bounds,method='highs')
+
+#Output result
+if res.success:
+    print("Optimization Successful!")
+    print(f"Minimum Cost: {res.fun:.2f} BDT")
+    print(f"Units of Food 1: {res.x[0]:.2f}")
+    print(f"Units of Food 2: {res.x[1]:.2f}")
+    print(f"Units of Food 3: {res.x[2]:.2f}")
+    print(f"Units of Food 4: {res.x[3]:.2f}")
+else:
+    print("Optimization failed. Check if constraints are feasible.")
+
+
+Maximize the profit from three grades of coal (A, B, C) under impurity constraints (ash <= 3%, phosphorous <= 0.03%) for a total of up to 100 tons.
+Grade A: 0.02% Phos, 3% Ash | Profit: 12 BDT/ton 
+Grade B: 0.04% Phos, 2% Ash | Profit: 15 BDT/ton 
+Grade C: 0.03% Phos, 5% Ash | Profit: 14 BDT/ton 
+Task: Find the proportions using the simplex method
+
+Find the minimum cost for a sick person's diet (Vitamins >= 4000, Minerals >= 50, Calories >= 1400) using foods A and B.
+
+Food A: 200 Vit, 1 Min, 40 Cal | Cost: 4 BDT 
+
+Food B: 100 Vit, 2 Min, 40 Cal | Cost: 3 BDT 
+
+Task: Solve using the Big-M method.
+
+
+import pulp
+#Create LP problem
+prob=pulp.LpProblem('Diet_problem_BigM',pulp.LpMinimize)
+#Big M value
+M=1e6
+#Decision variables
+x1=pulp.LpVariable('Food_A',lowBound=0)
+x2=pulp.LpVariable('Food_B',lowBound=0)
+#Slack,surplus and artificial variables
+s1=pulp.LpVariable('Surplus1',lowBound=0)
+a1=pulp.LpVariable('Artificial1',lowBound=0)
+
+s2=pulp.LpVariable('Surplus2',lowBound=0)
+a2=pulp.LpVariable('Artificial2',lowBound=0)
+
+s3=pulp.LpVariable('Surplus3',lowBound=0)
+a3=pulp.LpVariable('Artificial3',lowBound=0)
+#Cost
+prob+=4*x1+3*x2+M*a1+M*a2+M*a3,'Total_Cost_with_BigM'
+#Constraints
+prob+=200*x1+100*x2-s1+a1==4000,'Vitamins'
+prob+=x1+2*x2-s2+a2==50,'Minerals'
+prob+=40*x1+40*x2-s3+a3==1400,'Calories'
+
+prob.solve()
+#Output
+print(f'Optimal quantity of food A:{x1.varValue}')
+print(f'Optimal quantity of food B:{x2.varValue}')
+print(f'Minimum total cost:{pulp.value(prob.objective)}')
+
+
+Find the basic feasible solution for a transportation problem with 4 sources (A-D) and 4 destinations (P-S) with a total availability/requirement of 200 units.
+
+Methods: (i) North-West Corner Rule, (ii) Least Cost Method
+
+import numpy as np
+#Supply & Demand
+supply=[80,60,40,20]
+demand=[60,60,30,40,10]
+#Cost matrix
+cost=np.array([
+   [4,3,1,2,6],
+   [5,2,3,4,5],
+   [3,5,4,2,5],
+   [2,4,4,5,3]
+],dtype=float)
+
+def northwest_corner(s,d):
+    s,d=s[:],d[:]
+    alloc=np.zeros((len(s),len(d)),dtype=int)
+    i=j=0
+    while i<len(s) and j<len(d):
+        m=min(s[i],d[j])
+        alloc[i][j]=m
+        s[i]-=m
+        d[j]-=m
+        if s[i]==0: i+=1
+        elif d[j]==0: j+=1
+    return alloc
+
+def least_cost(s,d,c):
+    s,d=s[:],d[:]
+    c=c.copy()
+    alloc=np.zeros_like(c)
+    while np.any(s) and np.any(d):
+        i,j=divmod(np.argmin(c),c.shape[1])
+        m=min(s[i],d[j])
+        alloc[i][j]=m
+        s[i]-=m
+        d[j]-=m
+        if s[i]==0: c[i,:]=np.inf
+        elif d[j]==0: c[:,j]=np.inf
+    return alloc
+
+def total_cost(a,c):
+    return np.sum(a*c)
+
+nw=northwest_corner(supply,demand)
+lc=least_cost(supply,demand,cost)
+
+print('North-West Corner:\n',nw)
+print('Cost:',total_cost(nw,cost))
+print('\nLeast Cost Method:\n',lc)
+print('Cost:',total_cost(lc,cost))
+
+
+Determine the optimal solution for a shipping problem from 3 factories (F1-F3) to 3 warehouses (W1-W3) using the MODI method
+
+from pulp import *
+
+# Define supply, demand, and costs
+supply = {'F1': 200, 'F2': 160, 'F3': 90}
+#supply=[200,160,90]
+demand = {'W1': 180, 'W2': 120, 'W3': 150}
+costs = {
+    'F1': {'W1': 16, 'W2': 20, 'W3': 12},
+    'F2': {'W1': 14, 'W2': 8, 'W3': 18},
+    'F3': {'W1': 26, 'W2': 24, 'W3': 16}
+}
+
+# Create the linear programming problem
+prob = LpProblem("Transportation_Problem", LpMinimize)
+
+# Define decision variables
+vars = LpVariable.dicts("Route", (supply.keys(), demand.keys()), 0, None, LpContinuous)
+
+# Set the objective function (minimize total cost)
+prob += lpSum([vars[f][w] * costs[f][w] for f in supply for w in demand]), "Total Cost"
+
+# Add supply constraints
+for f in supply:
+    prob += lpSum([vars[f][w] for w in demand]) == supply[f], f"Supply_{f}"
+
+# Add demand constraints
+for w in demand:
+    prob += lpSum([vars[f][w] for f in supply]) == demand[w], f"Demand_{w}"
+
+# Solve the problem
+prob.solve()
+
+# Print the results
+print("Status:", LpStatus[prob.status])
+print("\nOptimal Shipping Plan:")
+for v in prob.variables():
+    if v.varValue > 0:
+        print(f"{v.name.replace('_', ' to ')}: {v.varValue} units")
+print(f"\nTotal Shipping Cost: {value(prob.objective)} BDT")
+
+
+
+Assign four salesmen (A-D) to four cities (1-4) to maximum profit based on an estimated daily profit matrix.
+
+import numpy as np
+from scipy.optimize import linear_sum_assignment
+#Profit matrix
+profit=np.array([
+    [16,10,14,11],
+    [14,11,15,15],
+    [15,15,13,12],
+    [13,12,14,15]
+])
+#For maximization
+cost=profit.max()-profit
+#Solve using Hungarian algorithm
+row_ind,col_ind=linear_sum_assignment(cost)
+#Output result
+total_profit=profit[row_ind,col_ind].sum()
+print('Optimal Assignment:')
+for i in range(len(row_ind)):
+    print(f'Salesman {chr(65+row_ind[i])} \u2192 City {col_ind[i]+1} (profit:{profit[row_ind[i]][col_ind[i]]})')
+
+print('Total maximum profit',total_profit)
+
+
+
+Find the best strategy and the value of a 3x3 game for Player A and Player B
+
+
+import numpy as np
+from scipy.optimize import linprog
+# Payoff matrix for Player A (column player)
+A=np.array([
+    [-1,-2, 8],
+    [ 7, 5,-1],
+    [ 6, 0,12]
+])
+# Since linprog solves minimization problems,
+# we will convert the game into a minimization problem for the column player.
+# Step 1: Make the payoff matrix positive by adding a constant (if needed)
+min_value=np.min(A)
+if min_value<0:
+    A=A-min_value  # shift matrix to make all elements non-negative
+else:
+    min_value=0  # no shift needed
+# Step 2: Set up the LP
+c=[1,1,1]   # Objective: minimize sum of probabilities (due to duality)
+A_ub=-A.T     # Constraints: -A^T x <= -1 (because we maximize in original)
+b_ub=-np.ones(3)
+# Step 3: Solve
+res=linprog(c, A_ub=A_ub, b_ub=b_ub, method='highs')
+# Step 4: Get the probabilities
+probabilities=res.x /np.sum(res.x)
+# Step 5: Calculate the value of the game
+value=1 /np.sum(res.x)
+value=value+min_value  # Adjust back if shifted earlier
+print("Optimal mixed strategy for Player A:")
+print(f"Play Row 1 with probability {probabilities[0]:.4f}")
+print(f"Play Row 2 with probability {probabilities[1]:.4f}")
+print(f"Play Row 3 with probability {probabilities[2]:.4f}")
+
+print(f"\nValue of the game: {value:.4f}")

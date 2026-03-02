@@ -1,0 +1,926 @@
+1. (a) Find the parametric equations of the tangent line to the following curves: 
++1
+i. r(t) = ln(t) i + e^(-t) j + t^3 k ; t0 = 2 
+ii. r(t) = 2 cos(pi * t) i + 2 sin(pi * t) j + 3t k ; t0 = 1/3 
+(b) Find the vector parallel to the line of intersection of the two planes 3x - 6y - 2z = 15 and 2x + y - 2z = 5. 
+(c) Find the velocity and acceleration of r(t) = 3t i + sin(t) j + t^2 k as a function of theta(t). Also, plot the graph of theta(t) versus 1
+
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the symbolic variable for exact calculations
+t = sp.Symbol('t')
+
+# --- Q1(a): Tangent Lines ---
+print("--- Q1(a): Tangent Lines ---")
+
+# Curve i
+r1 = sp.Matrix([sp.log(t), sp.exp(-t), t**3])
+v1 = sp.diff(r1, t)
+print(f"i. Point r(2): {r1.subs(t, 2).T}")
+print(f"   Direction r'(2): {v1.subs(t, 2).T}")
+
+# Curve ii
+r2 = sp.Matrix([2*sp.cos(sp.pi*t), 2*sp.sin(sp.pi*t), 3*t])
+v2 = sp.diff(r2, t)
+print(f"\nii. Point r(1/3): {r2.subs(t, 1/3).T}")
+print(f"    Direction r'(1/3): {v2.subs(t, 1/3).T}\n")
+
+
+# --- Q1(b): Plane Intersection ---
+print("--- Q1(b): Plane Intersection ---")
+# Normal vectors from the plane equations
+n1 = sp.Matrix([3, -6, -2])
+n2 = sp.Matrix([2, 1, -2])
+
+# The cross product gives the parallel vector
+v_parallel = n1.cross(n2)
+print(f"Parallel Vector: {v_parallel.T}\n")
+
+
+# --- Q1(c): Velocity, Acceleration, and Angle Plot ---
+print("--- Q1(c): Velocity and Acceleration ---")
+r3 = sp.Matrix([3*t, sp.sin(t), t**2])
+v3 = sp.diff(r3, t) # First derivative (Velocity)
+a3 = sp.diff(v3, t) # Second derivative (Acceleration)
+
+print(f"Velocity v(t): {v3.T}")
+print(f"Acceleration a(t): {a3.T}")
+
+# --- Plotting theta(t) using the simple Option 1 loop ---
+t_vals = np.linspace(0, 10, 200) # 200 time steps from 0 to 10
+theta_vals = []
+
+for t_val in t_vals:
+    # 1. Define the numerical vectors for the current time 't_val'
+    v = np.array([3, np.cos(t_val), 2*t_val])
+    a = np.array([0, -np.sin(t_val), 2])
+    
+    # 2. Compute dot product and magnitudes
+    dot_prod = np.dot(v, a)
+    mags = np.linalg.norm(v) * np.linalg.norm(a)
+    
+    # 3. Calculate angle (arccos) and add to our list
+    theta_vals.append(np.arccos(dot_prod / mags))
+
+# Plot the results
+plt.figure(figsize=(8, 4))
+plt.plot(t_vals, theta_vals, color='blue', linewidth=2)
+plt.title(r'Angle $\theta(t)$ between Velocity and Acceleration')
+plt.xlabel('Time (t)')
+plt.ylabel(r'Angle $\theta$ (radians)')
+plt.grid(True)
+plt.show()
+
+2. (a) Find the tangent vectors to the plane curve C defined by the vector function r(t) = 5 cos t i + 4 sin t j at the points where t = pi/4 and t = pi. Make a sketch of C, and display the position vectors r(pi/4) and r(pi), and the tangent vectors r'(pi/4) and r'(pi).
++2
+
+(b) A bug walks along the trunk of a tree following a path modeled by the circular helix r(t) = <cos t, sin t, t>. Find the arc length parameterization of the circular helix while starting the bug at the reference point (1, 0, 0). Also, compute the bug's final coordinates when the bug walks up the helix for a distance of 10 units and graphically show the obtained results.
+
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+t = sp.Symbol('t')
+
+# --- Q2(a): Tangent Vectors ---
+r_a = sp.Matrix([5*sp.cos(t), 4*sp.sin(t)])
+v_a = sp.diff(r_a, t)
+
+for t_val in [sp.pi/4, sp.pi]:
+    print(f"t={t_val}: r={r_a.subs(t, t_val).T}, r'={v_a.subs(t, t_val).T}")
+
+# Minimal 2D Plot
+t_num = np.linspace(0, 2*np.pi, 100)
+plt.plot(5*np.cos(t_num), 4*np.sin(t_num))
+
+for t_val in [np.pi/4, np.pi]:
+    pos = [5*np.cos(t_val), 4*np.sin(t_val)]
+    tan = [-5*np.sin(t_val), 4*np.cos(t_val)]
+    plt.quiver(0, 0, pos[0], pos[1], angles='xy', scale_units='xy', scale=1)
+    plt.quiver(pos[0], pos[1], tan[0], tan[1], angles='xy', scale_units='xy', scale=1)
+
+plt.axis('equal') 
+plt.show()
+
+
+# --- Q2(b): Arc Length Parameterization ---
+s, u = sp.symbols('s u', positive=True)
+r_b = sp.Matrix([sp.cos(t), sp.sin(t), t])
+v_b = sp.diff(r_b, t)
+
+# Calculate arc length, solve for t, and substitute
+mag_v = sp.simplify(sp.sqrt(v_b.dot(v_b))) 
+s_eq = sp.integrate(mag_v.subs(t, u), (u, 0, t))
+t_s = sp.solve(sp.Eq(s, s_eq), t)[0]
+r_s = r_b.subs(t, t_s)
+final_pos = r_s.subs(s, 10)
+
+print(f"s(t) = {s_eq}")
+print(f"r(s) = {r_s.T}")
+print(f"Final pos at s=10: {final_pos.T}")
+
+# Minimal 3D Plot
+ax = plt.figure().add_subplot(projection='3d')
+t_plot = np.linspace(0, 10/np.sqrt(2), 100)
+
+ax.plot(np.cos(t_plot), np.sin(t_plot), t_plot) # Helix path
+ax.scatter(1, 0, 0)                             # Start point
+ax.scatter(float(final_pos[0]), float(final_pos[1]), float(final_pos[2])) # End point
+plt.show()
+
+
+3. (a) Compute T, N, B, kappa, and tau for the curves: 
+
+
+i. r(t) = e^t i + e^t cos t j + e^t sin t k ; t = 0 
+
+
+ii. r(t) = 2 cos t i + 3 sin t j , 0 <= t <= 2*pi 
+
+Also, plot the graphs of kappa(t) and hence comment on the obtained results. 
+
+
+(b) Justify whether or not the function f(x, y) = y^2 cos(x - y) satisfies the Laplace's equation and Cauchy-Riemann equations. Also, establish the identity f_xy = f_yx if possible. 
++1
+
+
+(c) Suppose that w = sqrt(x^2 + y^2 + z^2), x = cos(theta), y = sin(theta), z = tan(theta). Use chain rule to find dw/d(theta) when theta = pi/4. 
++1
+
+
+(d) The temperature (in degrees Celsius) at a point (x, y) on a metal plate in the xy-plane is stated as T(x, y) = 3x^2 y. Compute the gradient of T(x, y) at the point (-1, 3/2). 
++1
+
+Find the directional derivative of T(x, y) at the point (-1, 3/2) in the direction (-1, -1/2). Also, plot the directional derivative with -2 <= x <= 0, 0 <= y <= 2, and visualize directional derivative over a surface.
+
+
+
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+t, x, y, z, theta = sp.symbols('t x y z theta')
+
+# --- Q3(a): Frenet-Serret Frame and Curvature ---
+def get_frenet(r, t_val=None):
+    v = sp.diff(r, t)
+    a = sp.diff(v, t)
+    
+    # Magnitudes and Cross Products
+    v_mag = sp.sqrt(v.dot(v))
+    v_cross_a = v.cross(a)
+    v_cross_a_mag = sp.sqrt(v_cross_a.dot(v_cross_a))
+    
+    # Formulas
+    T = v / v_mag
+    B = v_cross_a / v_cross_a_mag
+    N = B.cross(T)
+    kappa = v_cross_a_mag / (v_mag**3)
+    
+    if t_val is not None:
+        return [sp.simplify(vec.subs(t, t_val)) for vec in [T, N, B, kappa]]
+    return sp.simplify(kappa)
+
+# Curve i
+r1 = sp.Matrix([sp.exp(t), sp.exp(t)*sp.cos(t), sp.exp(t)*sp.sin(t)])
+T1, N1, B1, k1 = get_frenet(r1, 0)
+print(f"3(a) i. At t=0: \nT={T1.T} \nN={N1.T} \nB={B1.T} \nkappa={k1}\n")
+
+# Curve ii (Added 0 for z-component to allow 3D cross product)
+r2 = sp.Matrix([2*sp.cos(t), 3*sp.sin(t), 0])
+kappa2_expr = get_frenet(r2)
+print(f"3(a) ii. kappa(t) = {kappa2_expr}")
+
+# Minimal 2D Plot for Curvature
+t_vals = np.linspace(0, 2*np.pi, 100)
+k_func = sp.lambdify(t, kappa2_expr, "numpy")
+
+plt.figure()
+plt.plot(t_vals, k_func(t_vals))
+plt.show()
+
+
+# --- Q3(b): Laplace and Mixed Derivatives ---
+f = y**2 * sp.cos(x - y)
+f_xx = sp.diff(f, x, 2)
+f_yy = sp.diff(f, y, 2)
+f_xy = sp.diff(sp.diff(f, x), y)
+f_yx = sp.diff(sp.diff(f, y), x)
+
+print(f"\n3(b) Laplace (f_xx + f_yy = 0?): {sp.simplify(f_xx + f_yy) == 0}")
+print(f"3(b) Mixed Identity (f_xy == f_yx?): {sp.simplify(f_xy - f_yx) == 0}\n")
+
+
+# --- Q3(c): Chain Rule ---
+w = sp.sqrt(x**2 + y**2 + z**2)
+x_t, y_t, z_t = sp.cos(theta), sp.sin(theta), sp.tan(theta)
+
+# Partial derivatives multiplied by parameter derivatives
+dw_dtheta = (sp.diff(w, x).subs({x: x_t, y: y_t, z: z_t}) * sp.diff(x_t, theta) +
+             sp.diff(w, y).subs({x: x_t, y: y_t, z: z_t}) * sp.diff(y_t, theta) +
+             sp.diff(w, z).subs({x: x_t, y: y_t, z: z_t}) * sp.diff(z_t, theta))
+
+print(f"3(c) dw/dtheta at pi/4: {dw_dtheta.subs(theta, sp.pi/4)}\n")
+
+
+# --- Q3(d): Gradient and Directional Derivative ---
+T_func = 3 * x**2 * y
+grad_T = sp.Matrix([sp.diff(T_func, x), sp.diff(T_func, y)])
+grad_val = grad_T.subs({x: -1, y: 1.5}) 
+
+# Normalize direction vector
+v_dir = sp.Matrix([-1, -0.5])
+u_dir = v_dir / sp.sqrt(v_dir.dot(v_dir))
+dir_deriv = grad_val.dot(u_dir)
+
+print(f"3(d) Gradient at (-1, 1.5): {grad_val.T}")
+print(f"3(d) Directional Derivative: {dir_deriv}")
+
+# Minimal 3D Plot for Directional Derivative Surface
+x_num = np.linspace(-2, 0, 50)
+y_num = np.linspace(0, 2, 50)
+X, Y = np.meshgrid(x_num, y_num)
+
+# D_u = Gradient dot Unit Vector calculated numerically over the grid
+D_u = (6 * X * Y) * float(u_dir[0]) + (3 * X**2) * float(u_dir[1])
+
+ax = plt.figure().add_subplot(projection='3d')
+ax.plot_surface(X, Y, D_u)
+plt.show()
+
+
+
+4. (a) Sketch the contour plots of: 
+i. f(x, y) = 4x^2 + y^2 
+ii. f(x, y, z) = z^2 - x^2 - y^2 Using level curves of height k = 1, 4, 9, 16, 26, 36. 
++1
+(b) Consider the functions: 
+i. f(x, y) = y^2 - 2y cos x, 1 <= x <= 7 
+ii. f(x, y) = sin x sin y, 0 <= x <= 2pi, 0 <= y <= 2pi 
+(c) Plot the three dimensional figures with python and Matplotlib to get a better visualization
+
+d)maxima minima
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# --- 4(a) Contour Plots and Level Surfaces ---
+k_levels = [1, 4, 9, 16, 26, 36]
+
+# (i) 2D Contour for f(x,y) = 4x^2 + y^2
+x_num = np.linspace(-4, 4, 100)
+y_num = np.linspace(-8, 8, 100)
+X, Y = np.meshgrid(x_num, y_num)
+Z1 = 4*X**2 + Y**2
+
+plt.figure()
+plt.contour(X, Y, Z1, levels=k_levels)
+plt.show()
+
+# (ii) 3D Level Surfaces for f(x,y,z) = z^2 - x^2 - y^2 = k
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+
+for k in k_levels:
+    # Solve for z (upper and lower halves of the hyperboloids)
+    Z2_upper = np.sqrt(k + X**2 + Y**2)
+    Z2_lower = -np.sqrt(k + X**2 + Y**2)
+    
+    # Plotting both sheets, alpha makes them slightly transparent
+    ax.plot_surface(X, Y, Z2_upper, alpha=0.3)
+    ax.plot_surface(X, Y, Z2_lower, alpha=0.3)
+plt.show()
+
+
+# --- 4(b) & 4(c) 3D Surface Visualizations ---
+
+# (i) f(x,y) = y^2 - 2y cos(x)
+x1 = np.linspace(1, 7, 50)
+y1 = np.linspace(-5, 5, 50)
+X1, Y1 = np.meshgrid(x1, y1)
+F1 = Y1**2 - 2*Y1*np.cos(X1)
+
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.plot_surface(X1, Y1, F1)
+plt.show()
+
+# (ii) f(x,y) = sin(x)sin(y)
+x2 = np.linspace(0, 2*np.pi, 50)
+y2 = np.linspace(0, 2*np.pi, 50)
+X2, Y2 = np.meshgrid(x2, y2)
+F2 = np.sin(X2) * np.sin(Y2)
+
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.plot_surface(X2, Y2, F2)
+plt.show()
+
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+x, y = sp.symbols('x y', real=True)
+
+def analyze_and_plot(f_expr, x_range, y_range, title):
+    print(f"--- Analyzing: {f_expr} ---")
+    
+    # 1. First derivatives
+    fx = sp.diff(f_expr, x)
+    fy = sp.diff(f_expr, y)
+    
+    # 2. Find critical points
+    critical_points = sp.solve([fx, fy], (x, y))
+    # Filter out complex solutions if they appear
+    real_cps = [(float(cx), float(cy)) for cx, cy in critical_points if cx.is_real and cy.is_real]
+    print(f"Critical Points: {real_cps}")
+    
+    # 3. Second derivatives and Discriminant
+    fxx = sp.diff(fx, x)
+    fyy = sp.diff(fy, y)
+    fxy = sp.diff(fx, y)
+    D = fxx * fyy - fxy**2
+    
+    # 4. Classify points
+    for cx, cy in real_cps:
+        D_val = D.subs({x: cx, y: cy}).evalf()
+        fxx_val = fxx.subs({x: cx, y: cy}).evalf()
+        
+        if D_val > 0 and fxx_val > 0:
+            print(f"Point ({cx}, {cy}) is a Local Minimum.")
+        elif D_val > 0 and fxx_val < 0:
+            print(f"Point ({cx}, {cy}) is a Local Maximum.")
+        elif D_val < 0:
+            print(f"Point ({cx}, {cy}) is a Saddle Point.")
+        else:
+            print(f"Point ({cx}, {cy}) is Inconclusive.")
+            
+    # 5. Simple 3D Plot
+    f_num = sp.lambdify((x, y), f_expr, "numpy")
+    X, Y = np.meshgrid(np.linspace(*x_range, 50), np.linspace(*y_range, 50))
+    Z = f_num(X, Y)
+    
+    ax = plt.figure().add_subplot(projection='3d')
+    ax.plot_surface(X, Y, Z, alpha=0.8)
+    plt.title(title)
+    plt.show()
+    print("\n")
+
+
+# Run analysis for function (i)
+f1 = 4*x*y - x**4 - y**4
+analyze_and_plot(f1, (-2, 2), (-2, 2), "5(a)(i): 4xy - x^4 - y^4")
+
+# Run analysis for function (ii)
+f2 = 4*x**2 * sp.exp(y) - 2*x**4 - sp.exp(4*y)
+analyze_and_plot(f2, (-2, 2), (-1.5, 1), "5(a)(ii): 4x^2e^y - 2x^4 - e^{4y}")
+
+
+5. (a) Locate all relative extrema and saddle points of the following functions: 
++1
+i. f(x, y) = 4xy - x^4 - y^4 
+ii. f(x, y) = 4x^2 e^y - 2x^4 - e^(4y) 
+Confirm that your obtained results are consistent with graphs. 
+Consider the ellipsoid x^2 + 4y^2 + z^2 = 18 
+i. Find an equation of the tangent plane to the ellipsoid at the point (1, 2, 1). 
+ii. Find parametric equations of the line that is normal to the ellipsoid at the point (1, 2, 1).
+
+iii. Find the acute angle that the tangent plane at the point (1, 2, 1) makes with the xy-plane. 
+iv. Visualize the obtained results. 
+(b) A space probe has the shape of an ellipsoid 4x^2 + y^2 + 4z^2 = 16 and after sitting in the sun for an hour, the temperature on its surface is given by T(x, y, z) = 8x^2 + 4yz - 16z + 600.
+
+import sympy as sp
+import numpy as np
+import matplotlib.pyplot as plt
+
+# --- 5: Ellipsoid Geometry ---
+print("--- Ellipsoid Problem ---")
+x, y, z, t, lam = sp.symbols('x y z t lam')
+
+# Surface F(x,y,z) = 0 and Point P
+F = x**2 + 4*y**2 + z**2 - 18
+P = (1, 2, 1)
+
+# Gradient evaluates the normal vector at P
+grad_F = sp.Matrix([sp.diff(F, var) for var in (x, y, z)])
+n_vec = grad_F.subs({x: P[0], y: P[1], z: P[2]})
+
+# i. Tangent Plane
+tangent_plane = n_vec[0]*(x - P[0]) + n_vec[1]*(y - P[1]) + n_vec[2]*(z - P[2])
+print(f"i. Tangent Plane Equation: {tangent_plane} = 0")
+
+# ii. Normal Line
+print(f"ii. Normal Line: x = {P[0] + n_vec[0]*t}, y = {P[1] + n_vec[1]*t}, z = {P[2] + n_vec[2]*t}")
+
+# iii. Acute Angle with xy-plane
+k_hat = sp.Matrix([0, 0, 1])
+cos_theta = abs(n_vec.dot(k_hat)) / (sp.sqrt(n_vec.dot(n_vec)) * sp.sqrt(k_hat.dot(k_hat)))
+theta = sp.acos(cos_theta)
+print(f"iii. Angle with xy-plane: {sp.deg(theta).evalf():.2f} degrees\n")
+
+# iv. Visualization (Minimal 3D Plot)
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+
+# Ellipsoid mesh
+u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
+ax.plot_surface(np.sqrt(18)*np.cos(u)*np.sin(v), 
+                np.sqrt(18/4)*np.sin(u)*np.sin(v), 
+                np.sqrt(18)*np.cos(v), color='b', alpha=0.2)
+
+# Tangent Plane mesh near P
+xx, yy = np.meshgrid(np.linspace(0, 2, 10), np.linspace(1.5, 2.5, 10))
+zz = 1 - (xx - 1) - 8*(yy - 2) # Solved tangent plane for z
+ax.plot_surface(xx, yy, zz, color='r', alpha=0.6)
+
+# Normal Line and Point
+t_num = np.linspace(-0.2, 0.2, 10)
+ax.plot(1 + 2*t_num, 2 + 16*t_num, 1 + 2*t_num, color='g', linewidth=2)
+ax.scatter(*P, color='k', s=50)
+
+plt.show()
+
+
+# --- 5(b): Space Probe Lagrange Multipliers ---
+print("\n--- 5(b): Space Probe Optimization ---")
+T = 8*x**2 + 4*y*z - 16*z + 600
+g = 4*x**2 + y**2 + 4*z**2 - 16
+
+# Set up the Lagrange function L = T - lambda * g
+L = T - lam * g
+grad_L = [sp.diff(L, var) for var in (x, y, z, lam)]
+
+# Solve the system of 4 equations
+solutions = sp.solve(grad_L, (x, y, z, lam), dict=True)
+
+max_temp = -sp.oo
+hottest_points = []
+
+for sol in solutions:
+    # We only care about real coordinates
+    if sol[x].is_real and sol[y].is_real and sol[z].is_real:
+        temp = T.subs({x: sol[x], y: sol[y], z: sol[z]}).evalf()
+        
+        # Track the absolute maximum temperature
+        if temp > max_temp:
+            max_temp = temp
+            hottest_points = [(sol[x], sol[y], sol[z])]
+        elif sp.simplify(temp - max_temp) == 0:
+            hottest_points.append((sol[x], sol[y], sol[z]))
+
+print(f"Max Temperature: {max_temp:.2f}")
+print("Hottest Point(s) (x, y, z):")
+for pt in hottest_points:
+    print(f"  ({pt[0]:.3f}, {pt[1]:.3f}, {pt[2]:.3f})")
+
+
+6. (a) Compute the integrals: 
+i. The triple integral from 0 to 1-x^2, then 0 to 1-x^2+x^2-y^2 of x * e^(-y) * cos(z) dz dy dx 
+ii. The double integral over R of (xy) / sqrt(x^2 + y^2 + 1) dA; where R = {(x, y): 0 <= x <= 1, 0 <= y <= 1} 
+(b) Find the surface area of that portion of the surface z = sqrt(4 - x^2) that lies above the rectangle R in the xy-plane whose coordinates satisfy 0 <= x <= 1 and 0 <= y <= 4. 
+
+(c) Find the volume of the solid that lies below the paraboloid z = 4 - x^2 - y^2, above the xy-plane, and inside the cylinder (x - 1)^2 + y^2 = 1
+import numpy as np
+from scipy.integrate import tplquad, dblquad
+
+print("--- Q6: Integrals and Applications ---")
+
+# --- 6(a)(i): Triple Integral ---
+# The function variables for scipy must be ordered (z, y, x)
+f1 = lambda z, y, x: x * np.exp(-y) * np.cos(z)
+
+# Limits: x from 0 to 1, y from 0 to 1-x^2, z from 0 to 1-y^2
+ans1, _ = tplquad(f1, 0, 1, 
+                  lambda x: 0, lambda x: 1 - x**2, 
+                  lambda x, y: 0, lambda x, y: 1 - y**2)
+print(f"6(a)(i) Triple Integral: {ans1:.5f}")
+
+
+# --- 6(a)(ii): Double Integral ---
+# The function variables for scipy must be ordered (y, x)
+f2 = lambda y, x: (x * y) / np.sqrt(x**2 + y**2 + 1)
+
+# Limits: x from 0 to 1, y from 0 to 1
+ans2, _ = dblquad(f2, 0, 1, lambda x: 0, lambda x: 1)
+print(f"6(a)(ii) Double Integral: {ans2:.5f}\n")
+
+
+# --- 6(b): Surface Area ---
+# The surface area formula simplified to: 2 / sqrt(4 - x^2)
+f_sa = lambda y, x: 2 / np.sqrt(4 - x**2)
+
+# Limits: x from 0 to 1, y from 0 to 4
+ans_sa, _ = dblquad(f_sa, 0, 1, lambda x: 0, lambda x: 4)
+print(f"6(b) Surface Area: {ans_sa:.5f}\n")
+
+
+# --- 6(c): Volume ---
+# Converted to polar coordinates: z = (4 - r^2) * r
+f_vol = lambda r, theta: (4 - r**2) * r
+
+# Limits: theta from -pi/2 to pi/2, r from 0 to 2*cos(theta)
+ans_vol, _ = dblquad(f_vol, -np.pi/2, np.pi/2, 
+                     lambda theta: 0, lambda theta: 2*np.cos(theta))
+print(f"6(c) Volume: {ans_vol:.5f}")
+
+
+7. (a) Suppose that the temperature in degrees Celsius at a point (x, y) on a flat metal plate is described as T(x, y) = 10 - 8x^2 - 2y^2, where x and y are in meters. Find the average temperature of the rectangular portion of the plate for which 0 <= x <= 1 and 0 <= y <= 2.
++1
+(b) Evaluate the line integral of (xy + z^3) ds from (1, 0, 0) to (-1, 0, pi) along the helix C that is represented by the parametric equations x = cos t, y = sin t, z = t (0 <= t <= pi).
++1
+(c) Find the mass of a cylinder with radius r and height h centered at origin with density rho(x, y) = x^2 + y^2.
+(d) Let F(x, y) = e^y i + x e^y j denotes a force field in the xy-plane.
+i. Verify that the force field F(x, y) is conservative on the entire xy-plane.
+ii. Find a potential function.
+iii. Find the work done by the field on a particle that moves from (1, 0) to (-1, 0) along the semicircular path C.
+
+import sympy as sp
+
+# Define variables
+x, y, z, t, R, theta = sp.symbols('x y z t R theta')
+r_const, h_const = sp.symbols('r h', positive=True)
+
+print("--- Q7: Integrals and Vector Fields ---")
+
+# --- 7(a): Average Temperature ---
+T = 10 - 8*x**2 - 2*y**2
+Area = (1 - 0) * (2 - 0)
+T_integral = sp.integrate(T, (x, 0, 1), (y, 0, 2))
+T_avg = T_integral / Area
+
+print(f"7(a) Average Temperature: {T_avg}")
+
+
+# --- 7(b): Line Integral ---
+# Substitute parametric equations into the integrand
+integrand_b = (sp.cos(t) * sp.sin(t)) + t**3
+# Multiply by ds (which is sqrt(2) * dt)
+line_integral = sp.integrate(integrand_b * sp.sqrt(2), (t, 0, sp.pi))
+
+print(f"7(b) Line Integral Value: {line_integral}")
+
+
+# --- 7(c): Mass of Cylinder ---
+# Density is R^2. Volume element is R dz dR d(theta).
+integrand_c = (R**2) * R 
+mass = sp.integrate(integrand_c, (z, 0, h_const), (R, 0, r_const), (theta, 0, 2*sp.pi))
+
+print(f"7(c) Mass of Cylinder: {mass}")
+
+
+# --- 7(d): Conservative Vector Field ---
+P = sp.exp(y)
+Q = x * sp.exp(y)
+
+# i. Verify conservative
+dP_dy = sp.diff(P, y)
+dQ_dx = sp.diff(Q, x)
+is_conservative = sp.simplify(dP_dy - dQ_dx) == 0
+print(f"\n7(d)(i) Is the field conservative? {is_conservative}")
+
+# ii. Potential function (Integrating P w.r.t x gives x*e^y)
+# To be rigorous, we check if d(x*e^y)/dy == Q, which it does.
+potential_f = x * sp.exp(y)
+print(f"7(d)(ii) Potential Function f(x,y): {potential_f}")
+
+# iii. Work done using the Fundamental Theorem of Line Integrals
+# Start: (1, 0), End: (-1, 0)
+work_done = potential_f.subs({x: -1, y: 0}) - potential_f.subs({x: 1, y: 0})
+print(f"7(d)(iii) Work Done along the path: {work_done}")
+
+
+
+8(a) Green's TheoremTheorem: $\oint_C P \,dx + Q \,dy = \iint_D \left(\frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right) dA$ Application: We have $\vec{F}(x,y) = (e^x - y^3)\hat{i} + (\cos y + x^3)\hat{j}$. We calculate the partial derivatives: $\frac{\partial Q}{\partial x} = 3x^2$ and $\frac{\partial P}{\partial y} = -3y^2$.The integrand becomes $3x^2 - (-3y^2) = 3(x^2 + y^2)$.We integrate this over the unit circle $x^2 + y^2 = 1$. Converting to polar coordinates, the integrand is $3r^2$, and $dA$ is $r \,dr\,d\theta$. The bounds are $0 \le r \le 1$ and $0 \le \theta \le 2\pi$.8(b) Surface Integral over a SphereSetup: We need to evaluate $\iint_O x^2 \,dS$ over the unit sphere $x^2 + y^2 + z^2 = 1$.Spherical Coordinates: We parameterize the sphere using spherical coordinates where radius $\rho = 1$. So, $x = \sin\phi\cos\theta$.The surface area element for a sphere of radius 1 is $dS = \sin\phi \,d\phi\,d\theta$.We integrate $x^2 \sin\phi = (\sin^2\phi\cos^2\theta)\sin\phi$ with bounds $0 \le \phi \le \pi$ and $0 \le \theta \le 2\pi$.8(c) Divergence TheoremTheorem: The outward flux $\iint_S \vec{F} \cdot d\vec{S} = \iiint_V (\nabla \cdot \vec{F}) \,dV$.Divergence: For $\vec{F} = x^3\hat{i} + y^3\hat{j} + z^2\hat{k}$, the divergence $\nabla \cdot \vec{F} = 3x^2 + 3y^2 + 2z$.Integration: We integrate this over the cylinder $x^2 + y^2 = 9$ from $z = 0$ to $z = 2$. Using cylindrical coordinates, the integrand is $3r^2 + 2z$, the volume element is $r \,dz\,dr\,d\theta$, and the bounds are $0 \le r \le 3$, $0 \le z \le 2$, and $0 \le \theta \le 2\pi$.8(d) Stokes' TheoremTheorem: $\oint_C \vec{F} \cdot d\vec{r} = \iint_S (\nabla \times \vec{F}) \cdot d\vec{S}$. We must calculate both sides to verify they are equal.Line Integral (Left Side): The boundary $C$ is the circle $x^2 + y^2 = 4$ at $z=0$. We parameterize it as $\vec{r}(t) = \langle 2\cos t, 2\sin t, 0 \rangle$ for $0 \le t \le 2\pi$, plug it into $\vec{F}$, and compute $\int \vec{F}(\vec{r}(t)) \cdot \vec{r}'(t) \,dt$.Surface Integral (Right Side): We find the curl $\nabla \times \vec{F}$. The surface $S$ is $z = 4 - x^2 - y^2$. We project this onto the $xy$-plane (a circle of radius 2) and compute the double integral using the formula $\iint_D (\text{curl} \vec{F}) \cdot \langle -z_x, -z_y, 1 \rangle \,dA$.
+
+
+import sympy as sp
+
+# Define variables
+x, y, z, r, theta, phi, t = sp.symbols('x y z r theta phi t')
+
+print("--- Q8: Vector Calculus Theorems ---")
+
+# --- 8(a): Green's Theorem ---
+P = sp.exp(x) - y**3
+Q = sp.cos(y) + x**3
+
+# dQ/dx - dP/dy
+integrand_8a = sp.diff(Q, x) - sp.diff(P, y)
+
+# Convert to polar (x=r*cos(theta), y=r*sin(theta))
+integrand_8a_polar = integrand_8a.subs({x: r*sp.cos(theta), y: r*sp.sin(theta)})
+# Integrate with area element r dr d(theta)
+work_green = sp.integrate(integrand_8a_polar * r, (r, 0, 1), (theta, 0, 2*sp.pi))
+print(f"8(a) Work done (Green's Theorem): {work_green}")
+
+
+# --- 8(b): Surface Integral over Sphere ---
+# x = sin(phi)*cos(theta), dS = sin(phi) d(phi) d(theta)
+x_spherical = sp.sin(phi) * sp.cos(theta)
+integrand_8b = (x_spherical**2) * sp.sin(phi)
+
+surf_integral = sp.integrate(integrand_8b, (phi, 0, sp.pi), (theta, 0, 2*sp.pi))
+print(f"8(b) Surface Integral: {surf_integral}")
+
+
+# --- 8(c): Divergence Theorem ---
+F_x, F_y, F_z = x**3, y**3, z**2
+divergence = sp.diff(F_x, x) + sp.diff(F_y, y) + sp.diff(F_z, z)
+
+# Convert to cylindrical coordinates
+div_cylindrical = divergence.subs({x**2 + y**2: r**2, x: r*sp.cos(theta), y: r*sp.sin(theta)})
+# Integrate with volume element r dz dr d(theta) over radius 3, height 2
+flux_div = sp.integrate(div_cylindrical * r, (z, 0, 2), (r, 0, 3), (theta, 0, 2*sp.pi))
+print(f"8(c) Outward Flux (Divergence Theorem): {flux_div}")
+
+
+# --- 8(d): Stokes' Theorem Verification ---
+F_vec = sp.Matrix([2*z, 3*x, 5*y])
+
+# 1. Line Integral (LHS)
+r_vec = sp.Matrix([2*sp.cos(t), 2*sp.sin(t), 0])
+dr_dt = sp.diff(r_vec, t)
+F_subbed = F_vec.subs({x: r_vec[0], y: r_vec[1], z: r_vec[2]})
+# Dot product of F and dr/dt
+line_integrand = F_subbed.dot(dr_dt)
+lhs_stokes = sp.integrate(line_integrand, (t, 0, 2*sp.pi))
+
+# 2. Surface Integral (RHS)
+# Curl of F: (dFz/dy - dFy/dz)i + (dFx/dz - dFz/dx)j + (dFy/dx - dFx/dy)k
+curl_F = sp.Matrix([sp.diff(F_vec[2], y) - sp.diff(F_vec[1], z),
+                    sp.diff(F_vec[0], z) - sp.diff(F_vec[2], x),
+                    sp.diff(F_vec[1], x) - sp.diff(F_vec[0], y)])
+
+# Surface z = 4 - x^2 - y^2
+z_surf = 4 - x**2 - y**2
+# Normal vector dS = <-dz/dx, -dz/dy, 1> dA
+normal_vec = sp.Matrix([-sp.diff(z_surf, x), -sp.diff(z_surf, y), 1])
+
+# Dot product of Curl and Normal
+surf_integrand = curl_F.dot(normal_vec)
+# Convert to polar for the circular domain D (radius 2)
+surf_integrand_polar = surf_integrand.subs({x: r*sp.cos(theta), y: r*sp.sin(theta)})
+rhs_stokes = sp.integrate(surf_integrand_polar * r, (r, 0, 2), (theta, 0, 2*sp.pi))
+
+print(f"\n8(d) Stokes' Theorem Verification:")
+print(f"     Line Integral (LHS) = {lhs_stokes}")
+print(f"     Surface Integral (RHS) = {rhs_stokes}")
+print(f"     Theorem Verified? {lhs_stokes == rhs_stokes}")
+
+
+
+
+
+A2
+1. Solve the following initial value problems using odeint and solve_ivp commands and compare the actual error at each step. Also, plot the solutions with exact solutions on the same set of axes.
++1
+i) y' = t * e^(3t) - 2y ; 0 <= t <= 1, y(0) = 0.
+Exact solution: y(t) = (1/5) * t * e^(3t) - (1/25) * e^(3t) + (1/25) * e^(-2t).
+ii) y' = 1 + (t - y)^2 ; 2 <= t <= 3, y(2) = 1.
+Exact solution: y(t) = t + 1 / (1 - t).
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint,solve_ivp
+f=lambda t,y: t*np.exp(3*t)-2*y
+exact=lambda t: 0.2*t*np.exp(3*t)-0.04*np.exp(3*t) + 0.04*np.exp(-2*t)
+t_pts=np.linspace(0,1,11)
+y0=[0]
+y_ode=odeint(f,0,t_pts,tfirst=True).flatten()
+y_ivp=solve_ivp(f,[0,1],y0,t_eval=t_pts).y[0]
+y_true=exact(t_pts)
+print(f"{'t':<5}|{'odeinr error':<15}|{'solve ivp error'}")
+for i in range(len(t_pts)):
+    print(f"{t_pts[i]:<5.1} {abs(y_true[i]-y_ode[i]):<15.2e}|{abs(y_true[i]-y_ivp[i]):.2e}")
+    
+
+plt.plot(t_pts, y_true, 'k-', label='Exact', lw=2)
+plt.plot(t_pts, y_ode, 'ro', label='odeint')
+plt.plot(t_pts, y_ivp, 'bx', label='solve_ivp')
+plt.legend(); plt.show()
+
+
+2. Consider the Lotka-Volterra predator-prey model defined by
+
+dx/dt = -0.1x + 0.02xy 
+
+dy/dt = 0.2y - 0.025xy 
+Where the populations x(t) (predators) and y(t) (prey) are measured in thousands. Suppose x(0) = 6 and y(0) = 6. Solve the system to find x(t) and y(t), and use the graphs to approximate the time t > 0 when the two populations are first equal
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+def dsdt(t,s0):
+    x,y=s0
+    return[-0.1*x+0.02*x*y,
+           0.2*y-0.025*x*y]
+
+x0=6
+y0=6
+s0=(x0,y0)
+t=np.linspace(0,100,1000)
+sol=odeint(dsdt,y0=s0,t=t,tfirst=True)
+plt.figure(figsize=(12,8))
+plt.plot(t,sol[:,0],'b--', label='x')
+plt.plot(t,sol[:,1],'k--', label='y')
+plt.xlabel('$t$',fontsize=14)
+plt.xlabel('$pop$',fontsize=14)
+plt.title('Change in Population over time')
+plt.legend
+plt.show
+diff=sol[:,0]-sol[:,1]
+crossing=np.where(np.diff(np.signbit(diff)))[0]
+crossing_time=t[crossing]
+print(f"The populations are equal at times t = {crossing_time}")
+print(f"First instance when populations are equal: t = {crossing_time[1]:.2f}")
+print(f'Population at first instance is : {sol[np.where(t==crossing_time[1]),0]}')
+
+
+
+3. Consider the competition model defined by:
+
+dx/dt = x(2 - 0.4x - 0.3y) 
+dy/dt = y(1 - 0.1y - 0.3x) 
+
+Where the populations x(t) and y(t) are measured in thousands and t in years. Analyze the populations over a long period of time for each of the following cases:
++1
+
+a) x(0) = 1.5, y(0) = 3.5 
+b) x(0) = 1, y(0) = 1 
+c) x(0) = 2, y(0) = 7 
+d) x(0) = 4.5, y(0) = 0.5
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+# 1. Fixed the function definition (indentation and logic)
+def dsdt(s0, t): # Note: odeint usually expects (y, t) unless tfirst=True is set
+    x, y = s0
+    return [x*(2 - 0.4*x - 0.3*y),
+            y*(1 - 0.1*y - 0.3*x)]
+
+x0 = [1.5, 1, 2, 4.5]
+y0 = [3.5, 1, 7, 0.5]
+t = np.linspace(0, 50, 1000) # Increased time to 50 to see "long period" behavior
+plt.figure(figsize=(12, 10))
+
+for i in range(4):
+    #print(i)
+    # 3. FIX: Use square brackets [] for list indexing, not ()
+    s0 = [x0[i], y0[i]] 
+    
+    # 4. Solving the ODE
+    s = odeint(dsdt, y0=s0, t=t)
+    
+    # 5. Correct subplot selection
+    plt.subplot(2, 2, i+1)
+    plt.plot(t, s[:, 0], label='Species x')
+    plt.plot(t, s[:, 1], label='Species y')
+    
+    plt.xlabel('Time (years)')
+    plt.ylabel('Population (thousands)')
+    plt.title(f'Case {i+1}: Start x={x0[i]}, y={y0[i]}')
+    plt.legend()
+    plt.grid(True)
+
+# 6. Final layout adjustment and show
+plt.tight_layout()
+plt.show()
+
+
+4. The motion of a swinging pendulum under certain simplifying assumptions is described by the second-order differential equation: 
+
+
+d^2(theta)/dt^2 + (g/L)sin(theta) = 0 
+
+Suppose the pendulum is 2 feet long and g = 32.17 ft/s^2. 
+
+Find the values of theta for 0 <= t <= 2 and initial conditions theta(0) = pi/6 and theta'(0) = 0, taking an increment of 0.1s
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+g,L=32.17,2
+def pendulum(s,t):
+    theta,omega=s
+    return[omega,(-g/L)*np.sin(theta)]
+t=np.linspace(0,2,200)
+s0=[np.pi/6,0]
+sol=odeint(pendulum,s0,t)
+plt.plot(t, sol[:, 0], label=r'$\theta(t)$')
+#plt.title('Pendulum Motion')
+#plt.xlabel('Time (s)')
+#plt.ylabel('Angle (rad)')
+#plt.grid(True)
+plt.show()
+
+
+
+
+Solve the following system of ODEs: 
+
+x2''' = -(x1'')^3 + x2' + x1 + sin(t) 
+x1''' = -2(x2')^2 + x2
+
+import numpy as np
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
+# Define the system of first-order ODEs
+def system(t,y):
+    y0,y1,y2,y3,y4,y5=y
+    dy0=y1
+    dy1=y2
+    dy2=-2*y4**2+y3  
+    dy3=y4
+    dy4=y5
+    dy5=-y2**3+y4+y0+np.sin(t) 
+    return [dy0,dy1,dy2,dy3,dy4,dy5]
+# Initial conditions
+y0_init=[1,0,0,1,0,0]
+t_span=np.linspace(0,10,1000)
+# Solve the system
+sol=solve_ivp(system,[0,10], y0_init,t_eval=t_span)
+# Plot the solutions
+plt.plot(sol.t, sol.y[0],label='$x_1(t)$')
+plt.plot(sol.t, sol.y[3],label='$x_2(t)$')
+plt.xlabel('t')
+plt.ylabel('Solution')
+plt.title('Solution of the System of ODEs')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+Use the Linear Shooting Algorithm to approximate the solution of y = e^(-10x) to the boundary value problem:
+
+
+y'' = 100y 
+
+0 <= x <= 1 
+y(0) = 1 
+y(1) = e^(-10) 
+
+Use h = 0.1 and 0.05. Also use solve_bvp to find the solution of the same problem.
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint, solve_bvp
+
+# Constants from the problem
+target_y1 = np.exp(-10)
+
+# 1. Define the system for Shooting Method: y'' = 100y
+# Reduced to first order: [y, y'] -> [y', 100y]
+def shoot_model(S, x):
+    y, yp = S
+    return [yp, 100*y]
+
+def linear_shooting(h):
+    x_pts = np.arange(0, 1 + h, h)
+    # Solve IVP 1: u(0)=1, u'(0)=0
+    u_sol = odeint(shoot_model, [1, 0], x_pts)
+    # Solve IVP 2: v(0)=0, v'(0)=1
+    v_sol = odeint(shoot_model, [0, 1], x_pts)
+    
+    # Calculate the missing initial slope (shooting factor)
+    u1, v1 = u_sol[-1, 0], v_sol[-1, 0]
+    slope = (target_y1 - u1) / v1
+    
+    # Combine solutions: y = u + slope * v
+    y_final = u_sol[:, 0] + slope * v_sol[:, 0]
+    return x_pts, y_final
+
+# 2. Define the system for solve_bvp
+def bvp_ode(x, y):
+    return np.vstack((y[1], 100*y[0]))
+
+def bvp_bc(ya, yb):
+    return np.array([ya[0] - 1, yb[0] - target_y1])
+
+# Calculate all versions
+x1, y1 = linear_shooting(0.1)
+x2, y2 = linear_shooting(0.05)
+
+x_mesh = np.linspace(0, 1, 100)
+y_guess = np.zeros((2, x_mesh.size))
+res = solve_bvp(bvp_ode, bvp_bc, x_mesh, y_guess)
+
+# 3. Plotting and Comparison
+plt.figure(figsize=(10, 6))
+plt.plot(x1, y1, 'ro', label='Shooting h=0.1')
+plt.plot(x2, y2, 'bs', label='Shooting h=0.05', markersize=4)
+plt.plot(res.x, res.y[0], 'k-', label='solve_bvp solution')
+plt.plot(x_mesh, np.exp(-10*x_mesh), 'g--', label='Exact: $e^{-10x}$')
+
+plt.title('Question 6: Boundary Value Problem Solutions')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.grid()
+plt.show()
+
+
